@@ -1,6 +1,6 @@
 {
   "name": "ember-jsonp",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "JSONP data load service",
   "directories": {
     "doc": "doc",
