@@ -137,7 +137,8 @@ export default Ember.Service.extend({
           error.call(ctx,err);
         }
         reject({
-          status: STATUS
+          status: STATUS,
+          error: err
         });
       };
 
