@@ -18,7 +18,7 @@ export default Ember.Controller.extend({
   searchTagDidChange: on('init', observer('searchTag', function() {
     let url = this.getFlickerURI();
     this.get('jsonp').request({
-      url,
+      url: url,
       paramName:'jsoncallback'
     }).then((result)=>{
       this.set('items',result.items);

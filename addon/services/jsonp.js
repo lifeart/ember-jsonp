@@ -54,6 +54,8 @@ export default Ember.Service.extend({
   },
   request(uri,ctx,success,error,options) {
 
+
+
     if (!options) {
       options = {};
     }
@@ -90,14 +92,15 @@ export default Ember.Service.extend({
       ctx = options.context;
     }
 
-    const elem = this.createScriptElement();
-    const timeout = options.timeout || this.get('timeout');
-    const callbackName = options[this.get('optionsCallbackName')] || this.generateCallbackName();
-    const cbParamName = options[this.get('optionsParamName')] || this.get('callbackParam');
-    const replacePattern = options.pattern || this.get('callbackPattern');
-    const callbackParams = this.buildURLCallbackParams(cbParamName,callbackName);
 
     return new Ember.RSVP.Promise((resolve,reject)=>{
+
+      const elem = this.createScriptElement();
+      const timeout = options.timeout || this.get('timeout');
+      const callbackName = options[this.get('optionsCallbackName')] || this.generateCallbackName();
+      const cbParamName = options[this.get('optionsParamName')] || this.get('callbackParam');
+      const replacePattern = options.pattern || this.get('callbackPattern');
+      const callbackParams = this.buildURLCallbackParams(cbParamName,callbackName);
       elem.src = this.buildURL(uri,callbackParams,replacePattern,callbackName);
       let cbTimeout = this.setupElementEvents(elem,callbackName,success,error,resolve,reject,timeout,ctx);
       this.setupCallback(callbackName,cbTimeout,resolve,success,ctx);
@@ -132,9 +135,6 @@ export default Ember.Service.extend({
     elem.onload = () => {
       this.cleanUp(elem,callbackName);
       STATUS = this.get('statusLoaded');
-      this.respond(ctx,success,resolve,{
-        status: STATUS
-      });
     };
 
     elem.onerror = (err) => {
