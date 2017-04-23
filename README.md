@@ -23,7 +23,15 @@ This is service addon, named `jsonp`, providing `ember-json` -like UX with JSONP
 ```
 
    this.get('jsonp').request(URL,context,success,error,options);
+   
+   <<OR>>
+   
+   this.get('jsonp').request(URL,options).then(success).catch(error);
+    
+   <<OR>>
 
+   this.get('jsonp').request({url,paramName}).then(success).catch(error);
+   
 ```
 
 
@@ -62,6 +70,10 @@ This is service addon, named `jsonp`, providing `ember-json` -like UX with JSONP
 * `paramName` callback parameter name
 * `callbackName` callback name
 * `timeout` timeout (ms)
+* `uri` or `url` request URL
+* `context` context for success/error handlers
+* `success` success handler
+* `error` error handler
 * `pattern` callbackName pattern,
 
 allows URL like  http://site.com/jsonp?callback=%callbackName%

@@ -31,6 +31,38 @@ export default Ember.Service.extend({
       options = {};
     }
 
+    if (error && typeof error === 'object') {
+      options = error;
+      error = null;
+    }
+
+    if (success && typeof success === 'object') {
+      options = success;
+      success = null;
+    }
+
+    if (typeof ctx === 'object' && !Object.keys(options).length) {
+      options = ctx;
+      ctx = undefined;
+    }
+
+    if (typeof uri === 'object') {
+      options = uri;
+      uri = options.url || options.uri;
+    }
+
+    if (!success && options.success) {
+      success = options.success;
+    }
+
+    if (!error && options.error) {
+      error = options.error;
+    }
+
+    if (!ctx && options.context) {
+      ctx = options.context;
+    }
+
     const elem = this.createScriptElement();
     const timeout = options.timeout || this.get('timeout');
     const callbackName = options[this.get('optionsCallbackName')] || this.generateCallbackName();
@@ -42,42 +74,56 @@ export default Ember.Service.extend({
 
     let STATUS = 'PENDING';
 
-    let cbTimeout = setTimeout(()=>{
-      if (STATUS === 'PENDING') {
-        elem.parentNode.removeChild(elem);
+    return new Ember.RSVP.Promise((resolve,reject)=>{
+
+
+      let cbTimeout = setTimeout(()=>{
+        if (STATUS === 'PENDING') {
+          elem.parentNode.removeChild(elem);
+          delete window[callbackName];
+        }
+        let errObject = {type:"error",error:'CALLBACK_TIMEOUT',status:STATUS};
+        if (error) {
+          error.call(ctx,errObject);
+        }
+        reject(errObject);
+      },timeout);
+
+
+      window[callbackName] = (data) => {
+        clearTimeout(cbTimeout);
+        if (success) {
+          success.call(ctx,data);
+        }
+        resolve(data);
+      };
+
+      elem.onload = function() {
+        this.parentNode.removeChild(this);
+        STATUS = 'LOADED';
         delete window[callbackName];
-      }
-      if (error) {
-        error.call(ctx,{type:"error",error:'CALLBACK_TIMEOUT',status:STATUS});
-      }
-    },timeout);
+        resolve({
+          status: STATUS
+        });
+      };
 
-    window[callbackName] = (data) => {
-      clearTimeout(cbTimeout);
-      if (success) {
-        success.call(ctx,data);
-      }
-    };
+      elem.onerror = function (err) {
+        this.parentNode.removeChild(this);
+        delete window[callbackName];
+        STATUS = 'ERROR';
+        clearTimeout(cbTimeout);
+        if (error) {
+          error.call(ctx,err);
+        }
+        reject({
+          status: STATUS
+        });
+      };
 
-    elem.onload = function() {
-      this.parentNode.removeChild(this);
-      STATUS = 'LOADED';
-      delete window[callbackName];
-    };
+      this.appendScriptElement(elem);
 
-    elem.onerror = function (err) {
-      this.parentNode.removeChild(this);
-      delete window[callbackName];
-      STATUS = 'ERROR';
-      clearTimeout(cbTimeout);
-      if (error) {
-        error.call(ctx,err);
-      }
-    };
 
-    this.appendScriptElement(elem);
-
-    return this;
+    });
   },
   appendScriptElement(element) {
     document.head.appendChild(element);

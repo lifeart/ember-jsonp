@@ -17,12 +17,13 @@ export default Ember.Controller.extend({
   },
   searchTagDidChange: on('init', observer('searchTag', function() {
     let url = this.getFlickerURI();
-    this.get('jsonp').request(url,this,(result)=>{
-      this.set('items',result.items);
-    },(error)=>{
-      console.log(error);
-    },{
+    this.get('jsonp').request({
+      url,
       paramName:'jsoncallback'
+    }).then((result)=>{
+      this.set('items',result.items);
+    }).catch((error)=>{
+      console.log(error);
     });
 
   }))
