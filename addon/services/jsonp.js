@@ -2,10 +2,31 @@
 
 import Ember from 'ember';
 
+const removeCallback = function (callbackName) {
+  try {
+    delete window[callbackName];
+  } catch (e) {
+    window[callbackName] = undefined;
+  }
+};
+
+const removeScript = function (node) {
+  node.parentNode.removeChild(node);
+};
+
+
+const removeTimeout = function (timeout) {
+  clearTimeout(timeout);
+};
+
+
 export default Ember.Service.extend({
   safePrefix: 'jsonp',
   timeout: 10000,
-  callbackPattern: '%callbackName%',
+  statusPending: 'PENDING',
+  statusLoaded: 'LOADED',
+  statusError: 'ERROR',
+  callbackPattern: '{{callbackName}}',
   optionsParamName: 'paramName',
   optionsCallbackName: 'callbackName',
   callbackParam: false,
@@ -72,15 +93,15 @@ export default Ember.Service.extend({
 
     elem.src = this.buildURL(uri,callbackParams,replacePattern,callbackName);
 
-    let STATUS = 'PENDING';
+    let STATUS = this.get('statusPending');
 
     return new Ember.RSVP.Promise((resolve,reject)=>{
 
 
       let cbTimeout = setTimeout(()=>{
-        if (STATUS === 'PENDING') {
-          elem.parentNode.removeChild(elem);
-          delete window[callbackName];
+        if (STATUS === this.get('statusPending')) {
+          removeScript(elem);
+          removeCallback(callbackName);
         }
         let errObject = {type:"error",error:'CALLBACK_TIMEOUT',status:STATUS};
         if (error) {
@@ -91,27 +112,27 @@ export default Ember.Service.extend({
 
 
       window[callbackName] = (data) => {
-        clearTimeout(cbTimeout);
+        removeTimeout(cbTimeout);
         if (success) {
           success.call(ctx,data);
         }
         resolve(data);
       };
 
-      elem.onload = function() {
-        this.parentNode.removeChild(this);
-        STATUS = 'LOADED';
-        delete window[callbackName];
+      elem.onload = () => {
+        removeScript(elem);
+        removeCallback(callbackName);
+        STATUS = this.get('statusLoaded');
         resolve({
           status: STATUS
         });
       };
 
-      elem.onerror = function (err) {
-        this.parentNode.removeChild(this);
-        delete window[callbackName];
-        STATUS = 'ERROR';
-        clearTimeout(cbTimeout);
+      elem.onerror = (err) => {
+        removeScript(elem);
+        removeCallback(callbackName);
+        removeTimeout(cbTimeout);
+        STATUS = this.get('statusError');
         if (error) {
           error.call(ctx,err);
         }
@@ -121,8 +142,6 @@ export default Ember.Service.extend({
       };
 
       this.appendScriptElement(elem);
-
-
     });
   },
   appendScriptElement(element) {

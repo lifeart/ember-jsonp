@@ -1,4 +1,4 @@
-# Ember-jsonp
+# ember-jsonp
 
 This README outlines the details of collaborating on this Ember addon.
 
