@@ -6,6 +6,12 @@ This is service addon, named `jsonp`, providing `ember-json` -like UX with JSONP
 
 ## Usage Example
 
+```
+
+   this.get('jsonp').request(URL,context,success,error,options);
+
+```
+
 
 ```
   jsonp: service(),
