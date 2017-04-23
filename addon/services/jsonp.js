@@ -133,13 +133,15 @@ export default Ember.Service.extend({
         removeCallback(callbackName);
         removeTimeout(cbTimeout);
         STATUS = this.get('statusError');
-        if (error) {
-          error.call(ctx,err);
-        }
-        reject({
+        let errObject = {
           status: STATUS,
-          error: err
-        });
+          error: err,
+          type:"error"
+        };
+        if (error) {
+          error.call(ctx,errObject);
+        }
+        reject(errObject);
       };
 
       this.appendScriptElement(elem);
