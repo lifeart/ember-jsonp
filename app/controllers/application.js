@@ -1,0 +1,29 @@
+import Ember from 'ember';
+
+const {inject:{service},computed,observer,on} = Ember;
+
+export default Ember.Controller.extend({
+  jsonp: service(),
+  init() {
+    this.set('searchTag', 'emberconf');
+  },
+  items: computed(function () {
+    return [];
+  }),
+  searchTag: '',
+  getFlickerURI() {
+    let encodedTag = encodeURIComponent(this.get('searchTag'));
+    return `//api.flickr.com/services/feeds/photos_public.gne?tags=${encodedTag}&format=json`;
+  },
+  searchTagDidChange: on('init', observer('searchTag', function() {
+    let url = this.getFlickerURI();
+    this.get('jsonp').request(url,this,(result)=>{
+      this.set('items',result.items);
+    },(error)=>{
+      console.log(error);
+    },{
+      paramName:'jsoncallback'
+    });
+
+  }))
+});
