@@ -4,7 +4,21 @@ This README outlines the details of collaborating on this Ember addon.
 
 This is service addon, named `jsonp`, providing `ember-json` -like UX with JSONP data.
 
+
+## DEMO
+
+ [https://lifeart.github.io/ember-jsonp/demo/](https://lifeart.github.io/ember-jsonp/demo/)
+
+
 ## Usage Example
+
+
+```
+  ember install ember-jsonp
+
+```
+
+
 
 ```
 
