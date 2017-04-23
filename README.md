@@ -2,7 +2,7 @@
 
 This README outlines the details of collaborating on this Ember addon.
 
-This is service addon, named `jsonp`, providing `ember-json` -like UX with JSONP data.
+This is service addon, named `jsonp`, providing `ember-ajax` -like UX with JSONP data without jQuery
 
 
 ## DEMO
@@ -31,6 +31,13 @@ This is service addon, named `jsonp`, providing `ember-json` -like UX with JSONP
    <<OR>>
 
    this.get('jsonp').request({url,paramName}).then(success).catch(error);
+   
+   <<OR>>
+   
+    this.get('jsonp').request({
+      url: "http://site.com?method=jsonp&callback={{callbackName}}",
+      pattern: "{{callbackName}}"
+    }).then(success).catch(error);
    
 ```
 
@@ -76,9 +83,9 @@ This is service addon, named `jsonp`, providing `ember-json` -like UX with JSONP
 * `error` error handler
 * `pattern` callbackName pattern,
 
-allows URL like  http://site.com/jsonp?callback=%callbackName%
+allows URL like  http://site.com/jsonp?callback={{callbackName}}
 
-where `%callbackName%` -> pattern for replacing by service
+where `{{callbackName}}` -> pattern for replacing by service
 
 ## Installation
 
