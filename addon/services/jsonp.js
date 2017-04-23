@@ -46,6 +46,12 @@ export default Ember.Service.extend({
   buildURL(uri,callbackParams,replacePattern,callbackName) {
     return `${uri.endsWith('&')?uri.slice(-1):uri}${callbackParams?`&${callbackParams}`:''}`.replace(replacePattern,encodeURIComponent(callbackName));
   },
+  setupCallback(callbackName,cbTimeout,resolve,success,ctx) {
+    window[callbackName] = (data) => {
+      removeTimeout(cbTimeout);
+      this.respond(ctx,success,resolve,data);
+    };
+  },
   request(uri,ctx,success,error,options) {
 
     if (!options) {
@@ -91,61 +97,59 @@ export default Ember.Service.extend({
     const replacePattern = options.pattern || this.get('callbackPattern');
     const callbackParams = this.buildURLCallbackParams(cbParamName,callbackName);
 
-    elem.src = this.buildURL(uri,callbackParams,replacePattern,callbackName);
+    return new Ember.RSVP.Promise((resolve,reject)=>{
+      elem.src = this.buildURL(uri,callbackParams,replacePattern,callbackName);
+      let cbTimeout = this.setupElementEvents(elem,callbackName,success,error,resolve,reject,timeout,ctx);
+      this.setupCallback(callbackName,cbTimeout,resolve,success,ctx);
+      this.appendScriptElement(elem);
+    });
+  },
+  cleanUp(elem,callbackName) {
+    removeScript(elem);
+    removeCallback(callbackName);
+  },
+  respond(context,callback,resolver,data) {
+    if (callback) {
+      callback.call(context,data);
+    }
+    resolver(data);
+  },
+  setupElementEvents(elem,callbackName,success,error,resolve,reject,timeout,ctx) {
 
     let STATUS = this.get('statusPending');
 
-    return new Ember.RSVP.Promise((resolve,reject)=>{
+    let cbTimeout = setTimeout(()=>{
+      if (STATUS === this.get('statusPending')) {
+       this.cleanUp(elem,callbackName);
+      }
+      this.respond(ctx,error,reject,{
+        type: "error",
+        error: 'CALLBACK_TIMEOUT',
+        status: STATUS
+      });
+    },timeout);
 
+    elem.onload = () => {
+      this.cleanUp(elem,callbackName);
+      STATUS = this.get('statusLoaded');
+      this.respond(ctx,success,resolve,{
+        status: STATUS
+      });
+    };
 
-      let cbTimeout = setTimeout(()=>{
-        if (STATUS === this.get('statusPending')) {
-          removeScript(elem);
-          removeCallback(callbackName);
-        }
-        let errObject = {type:"error",error:'CALLBACK_TIMEOUT',status:STATUS};
-        if (error) {
-          error.call(ctx,errObject);
-        }
-        reject(errObject);
-      },timeout);
+    elem.onerror = (err) => {
+      this.cleanUp(elem,callbackName);
+      removeTimeout(cbTimeout);
+      STATUS = this.get('statusError');
+      this.respond(ctx,error,reject,{
+        status: STATUS,
+        error: err,
+        type: "error"
+      });
+    };
 
+    return cbTimeout;
 
-      window[callbackName] = (data) => {
-        removeTimeout(cbTimeout);
-        if (success) {
-          success.call(ctx,data);
-        }
-        resolve(data);
-      };
-
-      elem.onload = () => {
-        removeScript(elem);
-        removeCallback(callbackName);
-        STATUS = this.get('statusLoaded');
-        resolve({
-          status: STATUS
-        });
-      };
-
-      elem.onerror = (err) => {
-        removeScript(elem);
-        removeCallback(callbackName);
-        removeTimeout(cbTimeout);
-        STATUS = this.get('statusError');
-        let errObject = {
-          status: STATUS,
-          error: err,
-          type:"error"
-        };
-        if (error) {
-          error.call(ctx,errObject);
-        }
-        reject(errObject);
-      };
-
-      this.appendScriptElement(elem);
-    });
   },
   appendScriptElement(element) {
     document.head.appendChild(element);
