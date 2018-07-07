@@ -1,6 +1,6 @@
 # ember-jsonp
 
-This README outlines the details of collaborating on this Ember addon.
+[Short description of the addon.]
 
 This is service addon, named `jsonp`, providing `ember-ajax` -like UX with JSONP data without jQuery
 
@@ -17,8 +17,6 @@ This is service addon, named `jsonp`, providing `ember-ajax` -like UX with JSONP
   ember install ember-jsonp
 
 ```
-
-
 
 ```
 
@@ -89,23 +87,45 @@ where `{{callbackName}}` -> pattern for replacing by service
 
 ## Installation
 
-* `git clone` this repository
-* `npm install`
-* `bower install`
+```
+ember install my-addon
+```
 
-## Running
+
+Usage
+------------------------------------------------------------------------------
+
+[Longer description of how to use the addon in apps.]
+
+
+Contributing
+------------------------------------------------------------------------------
+
+### Installation
+
+* `git clone <repository-url>`
+* `cd my-addon`
+* `npm install`
+
+### Linting
+
+* `npm run lint:js`
+* `npm run lint:js -- --fix`
+
+### Running tests
+
+* `ember test` – Runs the test suite on the current Ember version
+* `ember test --server` – Runs the test suite in "watch mode"
+* `ember try:each` – Runs the test suite against multiple Ember versions
+
+### Running the dummy application
 
 * `ember serve`
-* Visit your app at http://localhost:4200.
+* Visit the dummy application at [http://localhost:4200](http://localhost:4200).
 
-## Running Tests
+For more information on using ember-cli, visit [https://ember-cli.com/](https://ember-cli.com/).
 
-* `npm test` (Runs `ember try:testall` to test your addon against multiple Ember versions)
-* `ember test`
-* `ember test --server`
+License
+------------------------------------------------------------------------------
 
-## Building
-
-* `ember build`
-
-For more information on using ember-cli, visit [http://ember-cli.com/](http://ember-cli.com/).
+This project is licensed under the [MIT License](LICENSE.md).
