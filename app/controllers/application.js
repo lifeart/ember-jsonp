@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import Controller from '@ember/controller';
+import { inject as service } from '@ember/service';
+import { observer, computed } from '@ember/object';
+import { on } from '@ember/object/evented';
 
-const {inject:{service},computed,observer,on} = Ember;
-
-export default Ember.Controller.extend({
+export default Controller.extend({
   jsonp: service(),
   init() {
     this.set('searchTag', 'emberconf');
@@ -12,12 +13,12 @@ export default Ember.Controller.extend({
   }),
   searchTag: '',
   getFlickerURI() {
-    let encodedTag = encodeURIComponent(this.get('searchTag'));
+    let encodedTag = encodeURIComponent(this.searchTag);
     return `//api.flickr.com/services/feeds/photos_public.gne?tags=${encodedTag}&format=json`;
   },
   searchTagDidChange: on('init', observer('searchTag', function() {
     let url = this.getFlickerURI();
-    this.get('jsonp').request({
+    this.jsonp.request({
       url: url,
       paramName:'jsoncallback'
     }).then((result)=>{

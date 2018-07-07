@@ -1,6 +1,8 @@
 /*global window, document*/
 
-import Ember from 'ember';
+import { Promise } from 'rsvp';
+
+import Service from '@ember/service';
 
 const removeCallback = function (callbackName) {
   try {
@@ -20,7 +22,7 @@ const removeTimeout = function (timeout) {
 };
 
 
-export default Ember.Service.extend({
+export default Service.extend({
   safePrefix: 'jsonp',
   timeout: 10000,
   statusPending: 'PENDING',
@@ -93,7 +95,7 @@ export default Ember.Service.extend({
     }
 
 
-    return new Ember.RSVP.Promise((resolve,reject)=>{
+    return new Promise((resolve,reject)=>{
 
       const elem = this.createScriptElement();
       const timeout = options.timeout || this.get('timeout');
